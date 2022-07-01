@@ -1,1 +1,122 @@
-i joined
+answers = []
+reg_dict = {'R0':'000','R1' : '001','R2':'010', 'R3': '011', 'R4': '100', 'R5': '101', 'R6': '110', 'FLAG': '111'}
+op_dict = {'mov': '10010', 'add': '10000', 'sub': '10010', 'movreg': '10011', 'ld': '10100', 'st': '10101', 'mul':'10110', 'div':'10111', 'rs': '11000', 'ls': '11001', 'xor':'11010', 'or':'11011', 'and': '11100', 'not':'11101', 'cmp':'11110', 'jmp':'11111', 'jlt': '01100', 'jgt':'01101', 'je':'01111', 'hlt': '01010'}
+vardict = {}
+
+
+def dectobin(a):
+        return (bin(int(a))[2:])
+
+l1=["hihihihi"]
+l2=[]
+
+def bin_conv(n):
+    bnr = bin(n).replace('0b','')
+    x = bnr[::-1] #this reverses an array
+    while len(x) < 8:
+        x += '0'
+    bnr = x[::-1]
+    return bnr
+
+def typeB(l1):
+    string = ""
+    string += op_dict[l1[0]]
+    string+=reg_dict[l1[1]]
+    n = l1[2].replace("$", "")
+    count = len(string)
+    count+=len(str(dectobin(n)))
+    z = 16-count
+    while z>0:
+        string+='0'
+        z -=1
+    string += str(dectobin((n)))
+    return string
+def typeA(l1):
+    string = ""
+    string += op_dict[l1[0]]
+    string += '0'
+    string += '0'
+    string+=reg_dict[l1[1]]
+    string+=reg_dict[l1[2]]
+    string+=reg_dict[l1[3]]
+    return string
+def typeC(l1):
+    string = ""
+    string += op_dict[l1[0]]
+    i = 0
+    while i < 6:
+        string += '0'
+        i += 1
+    string+=reg_dict[l1[1]]
+    string+=reg_dict[l1[2]]
+    return string
+def hlt(l1):
+    return "0101000000000000"
+def typeE(l1):
+    string = ""
+    string += op_dict[l1[0]]
+    i = 0
+    while i < 3:
+        string += '0'
+        i+=1
+    string += l1[1]
+    return string
+def typeD(l1):
+    string=""
+    string+=op_dict[l1[0]]
+    string+=reg_dict[l1[1]]
+    string += vardict[l1[2]]
+    return string
+def convert(l1):
+    if l1[0]=='add' or l1[0]=='sub' or l1[0]=='mul'or l1[0]=='xor'or l1[0]=='or' or l1[0]=='and':
+        l2.append(typeA(l1))
+    elif l1[0]=='mov' and l1[2][0]=='$':
+        l2.append(typeB(l1))
+    elif l1[0]=='ls':
+        l2.append(typeB(l1))
+    elif l1[0]=='mov' and l1[2][0]!='$':
+        l2.append(typeC(l1))
+    elif l1[0]=='div' or l1[0]=='not' or l1[0]=='cmp':
+        l2.append(typeC(l1))
+    elif l1[0]=='ld' or l1[0]=='st':
+        l2.append(typeD(l1))
+    elif l1[0]=='jmp' or l1[0]=='jlt' or l1[0]=='jgt' or l1[0]=='je':
+        l2.append(typeE(l1))
+    elif l1[0]=='hlt':
+        l2.append(hlt(l1))
+
+instructions=[]
+variables_inps=[]
+
+
+#   Taking inputs
+
+while l1[0]!= 'hlt':
+    l1=input().split()
+    varcount = 0
+    incount = 0  
+    if l1[0] == 'var':
+        varcount += 1
+        variables_inps.append(l1)
+    else:
+        incount += 1
+        instructions.append(l1)
+
+instruction_count=len(instructions)
+varcount=len(variables_inps)
+mem1=instruction_count
+
+for x in variables_inps:
+    vardict[x[1]]=bin_conv(mem1)
+    mem1+=1
+
+
+
+for i in instructions:
+    convert(i)
+
+for i in l2:
+    print(i)
+print(instructions)
+print(vardict)
+print(variables_inps)
