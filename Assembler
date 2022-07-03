@@ -4,8 +4,8 @@ from sys import stdin
 
 
 
-reg_dict = {'R0':'000','R1' : '001','R2':'010', 'R3': '011', 'R4': '100', 'R5': '101', 'R6': '110', 'FLAG': '111'}
-op_dict = {'mov': '10010', 'add': '10000', 'sub': '10010', 'movreg': '10011', 'ld': '10100', 'st': '10101', 'mul':'10110', 'div':'10111', 'rs': '11000', 'ls': '11001', 'xor':'11010', 'or':'11011', 'and': '11100', 'not':'11101', 'cmp':'11110', 'jmp':'11111', 'jlt': '01100', 'jgt':'01101', 'je':'01111', 'hlt': '01010'}
+reg_dict = {'R0':'000','R1' : '001','R2':'010', 'R3': '011', 'R4': '100', 'R5': '101', 'R6': '110', 'flag': '111'}
+op_dict = {'mov': '10010', 'add': '10000', 'sub': '10001', 'movreg': '10011', 'ld': '10100', 'st': '10101', 'mul':'10110', 'div':'10111', 'rs': '11000', 'ls': '11001', 'xor':'11010', 'or':'11011', 'and': '11100', 'not':'11101', 'cmp':'11110', 'jmp':'11111', 'jlt': '01100', 'jgt':'01101', 'je':'01111', 'hlt': '01010'}
 var_dict={}
 label_dict={}
 R0=0
@@ -16,14 +16,13 @@ R4=0
 R5=0
 R6=0
 
-f=open("C:\\Users\\vishal\\Documents\\co_files\\test1.txt","r")
 
-lines=f.readlines()
+
 instructions=[]
-for i in lines:
-    lst=[str(x) for x in i.split()]
-    if lst==[]:
+for i in stdin:
+    if i==[]:
         continue
+    lst=[str(x) for x in i.split()]
     instructions.append(lst)
 flag=list("0000000000000000")
 binary=[]
@@ -108,7 +107,6 @@ while(instructions[i][0]=="var"):
 mb=len(instructions)
 for i in range(mb):
     if (list(instructions[i][0])[-1]==':'):
-        print("yes")
         label=list(instructions[i][0])[:(len(instructions[i][0]))-1]
         label="".join(label)
         instructions[i][1:]
@@ -138,8 +136,8 @@ for i in range(mb):
             if(instructions[i][1] in reg_dict):
                 if (list(instructions[i][2])[0]=='$'):
                     lst=list("0123456789")
-                    for i in list(instructions[i][2][1:]):
-                        if i not in lst:
+                    for j in list(instructions[i][2][1:]):
+                        if j not in lst:
                             print("Error : Illegal immidiate value at line "+str(i))
                             quit()
                     typeB(instructions[i])
