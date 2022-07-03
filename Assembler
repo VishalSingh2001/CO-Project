@@ -108,6 +108,7 @@ while(instructions[i][0]=="var"):
 mb=len(instructions)
 for i in range(mb):
     if (list(instructions[i][0])[-1]==':'):
+        print("yes")
         label=list(instructions[i][0])[:(len(instructions[i][0]))-1]
         label="".join(label)
         instructions[i][1:]
