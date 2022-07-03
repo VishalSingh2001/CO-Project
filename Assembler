@@ -109,7 +109,7 @@ for i in range(mb):
     if (list(instructions[i][0])[-1]==':'):
         label=list(instructions[i][0])[:(len(instructions[i][0]))-1]
         label="".join(label)
-        instructions[i][1:]
+        instructions[i]=instructions[i][1:]
         label_dict[label]=addtobin(i+1)
 
     if(instructions[len(instructions)-1]!=["hlt"]):
@@ -123,13 +123,13 @@ for i in range(mb):
             quit()
     
     if (i>k-1 and (instructions[i][0] not in op_dict) and (list(instructions[i][0])[-1]!=':')):
-        print("Error : invalid instruction in line "+str(i))
+        print("Error : invalid instruction in line "+str(i+1))
         quit()
     if(instructions[i][0]=="add" or instructions[i][0]=="sub" or instructions[i][0]=="mul" or instructions[i][0]=="xor" or instructions[i][0]=="or" or instructions[i][0]=="and"):
             if((instructions[i][1] in reg_dict) and (instructions[i][2] in reg_dict) and (instructions[i][3] in reg_dict)):
                 typeA(instructions[i])
             else:
-                print("Error : wrong declaration of registors")
+                print("Error : wrong declaration of registors at line "+str(i+1))
                 quit()
     else:
         if(instructions[i][0]=="mov" or instructions[i][0]=="ls" or instructions[i][0]=="rs"):
@@ -138,22 +138,22 @@ for i in range(mb):
                     lst=list("0123456789")
                     for j in list(instructions[i][2][1:]):
                         if j not in lst:
-                            print("Error : Illegal immidiate value at line "+str(i))
+                            print("Error : Illegal immidiate value at line "+str(i+1))
                             quit()
                     typeB(instructions[i])
                 elif(instructions[i][2] in reg_dict):
                     typeC(instructions[i])
                 elif(list(instructions[i][2])[0]!='$' and instructions[i][2] not in reg_dict):
-                    print("error : Invalid Instructions at line "+str(i))
+                    print("error : Invalid Instructions at line "+str(i+1))
             else:
-                print("Error : Invalid statement")
+                print("Error : Invalid statement at line "+str(i+1))
                 quit()
         else:
             if(instructions[i][0]=="div" or instructions[i][0]=="not" or instructions[i][0]=="cmp"):
                 if((instructions[i][1] in reg_dict) and (instructions[i][2] in reg_dict)):
                     typeC(instructions[i])
                 else:
-                    print("Error : Invalid registor")
+                    print("Error : Invalid registor call at line "+str(i+1))
                     quit()
             else:
                 if(instructions[i][0]=="ld" or instructions[i][0]=="st"):
@@ -161,17 +161,17 @@ for i in range(mb):
                         if(instructions[i][2] in var_dict):
                             typeD(instructions[i])
                         else:
-                            print("Error : Undefined variable")
+                            print("Error : Undefined variable at line "+str(i+1))
                             quit()
                     else:
-                        print("Error : Invalid registor ")
+                        print("Error : Invalid registor  at line "+str(i+1))
                         quit()
                 else:
                     if(instructions[i][0]=="jmp" or instructions[i][0]=="jlt" or instructions[i][0]=="jgt" or instructions[i][0]=="je"):
                         if(instructions[i][1] in label_dict):
                             typeE(instructions[i])
                         else:
-                            print("Error : Use of invalid Label")
+                            print("Error : Use of invalid Label at line "+str(i+1))
                     else:
                         if(instructions[i][0]=="hlt"):
                             hlt(instructions[i])
