@@ -1,82 +1,69 @@
 from sys import stdin
 
-reg_dict = {'R0':'000','R1' : '001','R2':'010', 'R3': '011', 'R4': '100', 'R5': '101', 'R6': '110', 'FLAGS': '111'}
-op_dict = {'mov': '10010', 'add': '10000', 'sub': '10010', 'ld': '10100', 'st': '10101', 'mul':'10110', 'div':'10111', 'rs': '11000', 'ls': '11001', 'xor':'11010', 'or':'11011', 'and': '11100', 'not':'11101', 'cmp':'11110', 'jmp':'11111', 'jlt': '01100', 'jgt':'01101', 'je':'01111', 'hlt': '01010'}
-var_dict = {}
-labeldict = {}
-labellist = []
-def dectobin(a):
-        return (bin(int(a))[2:])
-def bin_conv(n):
-    bnr = bin(n).replace('0b','')
-    x = bnr[::-1]
-    while len(x) < 8:
-        x += '0'
-    bnr = x[::-1]
-    return bnr
-binary=[]
+reg_dict = {'R0':'000','R1' : '001','R2':'010', 'R3': '011', 'R4': '100', 'R5': '101', 'R6': '110',}
+op_dict = {'mov': '10010', 'add': '10000', 'sub': '10001', 'movreg': '10011', 'ld': '10100', 'st': '10101', 'mul':'10110', 'div':'10111', 'rs': '11000', 'ls': '11001', 'xor':'11010', 'or':'11011', 'and': '11100', 'not':'11101', 'cmp':'11110', 'jmp':'11111', 'jlt': '01100', 'jgt':'01101', 'je':'01111', 'hlt': '01010'}
+var_dict={}
+label_dict={}
+R0=0
+R1=0
+R2=0
+R3=0
+R4=0
+R5=0
+R6=0
 
-l1=["h"]
-l2=[]
+f=open("C:\\Users\\vishal\\Documents\\co_files\\test1.txt", "r")
+lines=f.readlines()
 
 instructions=[]
-variables_inps=[]
-
-
-# Taking inputs
-
-for i in stdin:
-    if i == []:
+for i in lines:
+    if i==[]:
         continue
-    l1=input().split()
-    varcount = 0
-    incount = 0  
-    if l1[0] == 'var':
-        varcount += 1
-        variables_inps.append(l1)
-    else:
-        incount += 1
-        instructions.append(l1)
-for i in instructions:
-    if i[0][::-1][0]==':':
-        labellist.append(i[0][::-1][1:][::-1])
-        labeldict[i[0][::-1][1:][::-1]] = instructions.index(i)
-        i.remove(i[0])
+    lst=[str(x) for x in i.split()]
+    instructions.append(lst)
+flag=list("0000000000000000")
+binary=[]
 
-
-instruction_count=len(instructions)
-varcount=len(variables_inps)
-mem1=instruction_count
-if len(instructions)>255:
-    print("You crossed maximum level of address")
-    quit()
-for x in variables_inps:
-    var_dict[x[1]]=bin_conv(mem1)
-    mem1+=1
-instructions = variables_inps+ instructions
-
-if(instructions[len(instructions)-1]!=["hlt"]):
-    print("Error: No halt given")
-    quit()
+def dectobin(a):
+        return (bin(int(a))[2:])
+def addtobin(n):
+    if n>255:
+        print("You crossed maximum level of address")
+        quit()
+    k=dectobin(n)
+    x=8-len(str(k))
+    strg=""
+    for i in range(x):
+        strg+='0'
+    strg+=str(k)
+    return strg
 
 def typeB(l1):
     string = ""
-    string += op_dict[l1[0]]
-    string+=reg_dict[l1[1]]
-    n = l1[2].replace("$", "")
-    if int(n) > 255:
-        print("Error: Illegal value of immediate value")
+    string +=op_dict[l1[0]]
+    string +=reg_dict[l1[1]]
+    n = int((l1[2][1:]))
+    if n>255:
+        print("Error : Illegal value of immidiate value")
         quit()
-    string += str(bin_conv((int(n))))
-    return string
+    count = len(string)
+    count+=len(str(dectobin(n)))
+    z = 16-count
+    while z>0:
+        string+="0"
+        z -=1
+    string += str(dectobin((n)))
+    binary.append(string)
+    return 
 def typeA(l1):
     string = ""
     string += op_dict[l1[0]]
-    string += '00'
+    string +="00"
     string+=reg_dict[l1[1]]
     string+=reg_dict[l1[2]]
     string+=reg_dict[l1[3]]
-    return string
+    binary.append(string)
+    return 
 def typeC(l1):
     string = ""
     if l1[0]=="mov":
@@ -85,29 +72,33 @@ def typeC(l1):
         string += op_dict[l1[0]]
     string+="00000"
     string+=reg_dict[l1[1]]
-    string+=reg_dict[l1[2]]
-    return string
+    if l1[2] in reg_dict:
+        string+=reg_dict[l1[2]]
+    else:
+        string+="111"
+    binary.append(string)
+    return 
 def hlt(l1):
-    return "0101000000000000"
+    string = ""
+    string+=op_dict[l1[0]]
+    string +="00000000000"
+    binary.append(string)
+    return 
 def typeE(l1):
     string = ""
     string += op_dict[l1[0]]
-    string += '000'
-    string +=bin_conv(labeldict[l1[1]])
-    return string
+    string+="000"
+    string+=label_dict[l1[1]]
+    binary.append(string)
+    return 
 def typeD(l1):
     string=""
     string+=op_dict[l1[0]]
     string+=reg_dict[l1[1]]
-    string += var_dict[l1[2]]
-    return string
-def mov(l1):
-    string = ""
-    string += "00011"
-    string+='00000'
-    string+=reg_dict[l1[1]]
-    string+=reg_dict[l1[2]]
-    return string
+    string+=var_dict[l1[2]]
+    binary.append(string)
+    return
+
 k=0
 i=0
 while(instructions[i][0]=="var"):
@@ -115,18 +106,30 @@ while(instructions[i][0]=="var"):
     i+=1   
 mb=len(instructions)
 for i in range(mb):
-    if(instructions[i][0]=="var" and i>k-1):
-        print("Error: variables declaration must be at the top only")
+    if (list(instructions[i][0])[-1]==':'):
+        label=list(instructions[i][0])[:(len(instructions[i][0]))-1]
+        label="".join(label)
+        instructions[i]=instructions[i][1:]
+        label_dict[label]=addtobin(i+1)
+
+    if(instructions[len(instructions)-1]!=["hlt"]):
+        print("Error : No halt given")
         quit()
+    else:
+        if (instructions[i][0]=="var" and i<=k-1):
+            var_dict[instructions[i][1]]=addtobin(len(instructions)-k+i)
+        if(instructions[i][0]=="var" and i>k-1):
+            print("Error : variables declaration must be at the top only")
+            quit()
     
     if (i>k-1 and (instructions[i][0] not in op_dict) and (list(instructions[i][0])[-1]!=':')):
-        print("Error: invalid instruction in line "+str(i+1))
+        print("Error : invalid instruction in line "+str(i+1))
         quit()
     if(instructions[i][0]=="add" or instructions[i][0]=="sub" or instructions[i][0]=="mul" or instructions[i][0]=="xor" or instructions[i][0]=="or" or instructions[i][0]=="and"):
             if((instructions[i][1] in reg_dict) and (instructions[i][2] in reg_dict) and (instructions[i][3] in reg_dict)):
-                binary.append(typeA(instructions[i]))
+                typeA(instructions[i])
             else:
-                print("Error: wrong declaration of registers at line "+str(i+1))
+                print("Error : wrong declaration of registors at line "+str(i+1))
                 quit()
     else:
         if(instructions[i][0]=="mov" or instructions[i][0]=="ls" or instructions[i][0]=="rs"):
@@ -135,68 +138,45 @@ for i in range(mb):
                     lst=list("0123456789")
                     for j in list(instructions[i][2][1:]):
                         if j not in lst:
-                            print("Error : Illegal immediate value at line "+str(i+1))
+                            print("Error : Illegal immidiate value at line "+str(i+1))
                             quit()
-                    binary.append(typeB(instructions[i]))
-                elif(instructions[i][2] in reg_dict):
-                    binary.append(typeC(instructions[i]))
-                elif(list(instructions[i][2])[0]!='$' and instructions[i][2] not in reg_dict):
-                    print("Error: Invalid instruction at line "+str(i+1))
+                    typeB(instructions[i])
+                elif(instructions[i][2] in reg_dict or instructions[i][2]=="FLAGS"):
+                    typeC(instructions[i])
+                elif((list(instructions[i][2])[0]!='$') and (instructions[i][2] not in reg_dict) and (instructions[i][2]!="FLAGS")):
+                    print("Error : Invalid Instructions at line "+str(i+1))
+                    quit()
             else:
-                print("Error: Invalid statement at line "+str(i+1))
+                print("Error : Invalid statement at line "+str(i+1))
                 quit()
         else:
             if(instructions[i][0]=="div" or instructions[i][0]=="not" or instructions[i][0]=="cmp"):
                 if((instructions[i][1] in reg_dict) and (instructions[i][2] in reg_dict)):
-                    binary.append(typeC(instructions[i]))
+                    typeC(instructions[i])
                 else:
-                    print("Error: Invalid register call at line "+str(i+1))
+                    print("Error : Invalid registor call at line "+str(i+1))
                     quit()
             else:
                 if(instructions[i][0]=="ld" or instructions[i][0]=="st"):
                     if(instructions[i][1] in reg_dict):
                         if(instructions[i][2] in var_dict):
-                            binary.append(typeD(instructions[i]))
+                            typeD(instructions[i])
                         else:
-                            print("Error: Undefined variable at line "+str(i+1))
+                            print("Error : Undefined variable at line "+str(i+1))
                             quit()
                     else:
-                        print("Error: Invalid register  at line "+str(i+1))
+                        print("Error : Invalid registor  at line "+str(i+1))
                         quit()
                 else:
                     if(instructions[i][0]=="jmp" or instructions[i][0]=="jlt" or instructions[i][0]=="jgt" or instructions[i][0]=="je"):
-                        if(instructions[i][1] in labeldict):
-                            binary.append(typeE(instructions[i]))
+                        if(instructions[i][1] in label_dict):
+                            typeE(instructions[i])
                         else:
-                            print("Error : Use of invalid label at line "+str(i+1))
+                            print("Error : Use of invalid Label at line "+str(i+1))
+                            quit()
                     else:
                         if(instructions[i][0]=="hlt"):
-                            binary.append(hlt(instructions[i]))
-# def convert(l1):
-#     if l1[0]=='add' or l1[0]=='sub' or l1[0]=='mul'or l1[0]=='xor'or l1[0]=='or' or l1[0]=='and':
-#         l2.append(typeA(l1))
-#     elif l1[0]=='mov' and l1[2][0]=='$':
-#         l2.append(typeB(l1))
-#     elif l1[0]=='ls' or l1[0]=='rs':
-#         l2.append(typeB(l1))
-#     elif l1[0]=='mov' and l1[2][0]!='$':
-#         l2.append(mov(l1))
-#     elif l1[0]=='div' or l1[0]=='not' or l1[0]=='cmp':
-#         l2.append(typeC(l1))
-#     elif l1[0]=='ld' or l1[0]=='st':
-#         l2.append(typeD(l1))
-#     elif l1[0]=='jmp' or l1[0]=='jlt' or l1[0]=='jgt' or l1[0]=='je':
-#         l2.append(typeE(l1))
-#     elif l1[0]=='hlt':
-#         l2.append(hlt(l1))
-
-
+                            hlt(instructions[i])
 
 for i in binary:
     print(i)
-# print(l1)
-# print(labellist)
-# print(labeldict)
-# print(instructions)
-# print(var_dict)
-# print(variables_inps)
