@@ -12,11 +12,9 @@ R4=0
 R5=0
 R6=0
 
-f=open("C:\\Users\\vishal\\Documents\\co_files\\test1.txt", "r")
-lines=f.readlines()
 
 instructions=[]
-for i in lines:
+for i in stdin:
     if i==[]:
         continue
     lst=[str(x) for x in i.split()]
@@ -111,6 +109,8 @@ for i in range(mb):
         label="".join(label)
         instructions[i]=instructions[i][1:]
         label_dict[label]=addtobin(i+1)
+    if instructions[i]==[]:
+        continue
 
     if(instructions[len(instructions)-1]!=["hlt"]):
         print("Error : No halt given")
