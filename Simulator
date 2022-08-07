@@ -1,0 +1,290 @@
+from sys import stdin
+op_dict = {'mov': '10010', 'add': '10000', 'sub': '10010', 'ld': '10100', 'st': '10101', 'mul':'10110', 'div':'10111', 'rs': '11000', 'ls': '11001', 'xor':'11010', 'or':'11011', 'and': '11100', 'not':'11101', 'cmp':'11110', 'jmp':'11111', 'jlt': '01100', 'jgt':'01101', 'je':'01111', 'hlt': '01010'}
+regval_dict = {'R0':'0000000000000000', 'R1':'0000000000000000','R2':'0000000000000000','R3':'0000000000000000','R4':'0000000000000000','R5':'0000000000000000','R6':'0000000000000000'}
+reg_dict = {'R0':'000','R1' : '001','R2':'010', 'R3': '011', 'R4': '100', 'R5': '101', 'R6': '110', 'FLAGS': '111'}
+FLAGS=list('0000000000000000')
+mem = ['0000000000000000']*256
+halt = False
+
+number=0
+def dectobin8bit(n):
+    bnr = bin(n).replace('0b','')
+    x = bnr[::-1]
+    while len(x) < 8:
+        x += '0'
+    bnr = x[::-1]
+    return bnr
+def dectobin16bit(n):
+    bnr = bin(n).replace('0b','')
+    x = bnr[::-1]
+    while len(x) < 16:
+        x += '0'
+    bnr = x[::-1]
+    return bnr
+def no(a):
+    a=list(a)
+    c=""
+    for i in range(16):
+        if a[i]=='0':
+            c+='1'
+        else:
+            c+='0'
+    return c
+def xor(a,b):
+    a=list(a)
+    b=list(b)
+    c=""
+    for  i in range(16):
+        if a[i]!=b[i]:
+            c+='1'
+        else:
+            c+='0'
+def orr(a,b):
+    a=list(a)
+    b=list(b)
+    c=""
+    for  i in range(16):
+        if a[i]=='1' or b[i]=='1':
+            c+='1'
+        else:
+            c+='0'
+def andd(a,b):
+    a=list(a)
+    b=list(b)
+    c=""
+    for  i in range(16):
+        if a[i]==b[i]:
+            c+='1'
+        else:
+            c+='0'
+def bintodec(n):
+    return int(n,2)
+def ee(regval_dict, count):
+    pc = str(dectobin8bit(count))
+    print(pc, end = " ")
+    for i in regval_dict:
+        print(regval_dict[i], end = " ")
+    print("\n")
+instructions=[]
+# f=open("C:\\Users\\vishal\\Documents\\co_files\\test.txt","r")
+# lines=f.readlines()
+
+for i in stdin:
+    instructions.append(i[:16])
+pc=0
+halt=False
+for i in range(len(instructions)):
+    mem[i]=instructions[i]
+while(halt==False):
+    i=instructions[pc]
+    number+=1
+    opcode = i[:5]
+    if opcode == '10010': #mov type b
+        FLAGS=list('0000000000000000')
+        r = i[5:8]
+        # print(r)
+        reg = list(reg_dict.keys())[list(reg_dict.values()).index(r)]
+        # print(reg)
+        regval_dict[reg] = str(dectobin16bit(bintodec(i[8:])))
+    
+        # ee(regval_dict, count)
+    if opcode == '10000': #type A add
+        FLAGS=list('0000000000000000')
+        r1 = i[7:10]
+        r2 = i[10:13]
+        r3 = i[13:]
+        # print(r1,r2,r3)
+        reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)]
+        # print(reg)
+        reg2 = list(reg_dict.keys())[list(reg_dict.values()).index(r2)]
+        reg3 = list(reg_dict.keys())[list(reg_dict.values()).index(r3)]
+        if (bintodec(regval_dict[reg2])+bintodec(regval_dict[reg1]))>((2**16)-1):
+            FLAGS[12]='1'
+            regval_dict[reg3] = str(dectobin16bit((bintodec(regval_dict[reg2])+bintodec(regval_dict[reg1]))%2**16))
+        else:
+            regval_dict[reg3] = str(dectobin16bit(bintodec(regval_dict[reg2])+bintodec(regval_dict[reg1])))
+        
+        
+        # ee(regval_dict, count)
+
+    if opcode == '10110': #mul
+        FLAGS=list('0000000000000000')
+        r1 = i[7:10]
+        r2 = i[10:13]
+        r3 = i[13:]
+        # print(r1,r2,r3)
+        reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)]
+        # print(reg)
+        reg2 = list(reg_dict.keys())[list(reg_dict.values()).index(r2)]
+        reg3 = list(reg_dict.keys())[list(reg_dict.values()).index(r3)]
+        if (bintodec(regval_dict[reg2])*(bintodec(regval_dict[reg1])))>((2**16)-1):
+            FLAGS[12]='1'
+            regval_dict[reg3] = str(dectobin16bit(bintodec(regval_dict[reg2])*(bintodec(regval_dict[reg1]))%2**16))
+        else:
+            regval_dict[reg3] = str(dectobin16bit(bintodec(regval_dict[reg2])*(bintodec(regval_dict[reg1]))))
+        
+    if opcode == '11010': #xor
+        FLAGS=list('0000000000000000')
+        r1 = i[7:10]
+        r2 = i[10:13]
+        r3 = i[13:]
+        # print(r1,r2,r3)
+        reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)]
+        # print(reg)
+        reg2 = list(reg_dict.keys())[list(reg_dict.values()).index(r2)]
+        reg3 = list(reg_dict.keys())[list(reg_dict.values()).index(r3)]
+        regval_dict[reg3] = xor(regval_dict[reg2],regval_dict[reg1])
+        
+        
+    if opcode == '11100': #and
+        FLAGS=list('0000000000000000')
+        r1 = i[7:10]
+        r2 = i[10:13]
+        r3 = i[13:]
+        # print(r1,r2,r3)
+        reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)]
+        # print(reg)
+        reg2 = list(reg_dict.keys())[list(reg_dict.values()).index(r2)]
+        reg3 = list(reg_dict.keys())[list(reg_dict.values()).index(r3)]
+        regval_dict[reg3] = andd(regval_dict[reg2], regval_dict[reg1])
+        
+    if opcode == '11011': #or
+        FLAGS=list('0000000000000000')
+        r1 = i[7:10]
+        r2 = i[10:13]
+        r3 = i[13:]
+        # print(r1,r2,r3)
+        reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)] #eg R1, a string
+        # print(reg)
+        reg2 = list(reg_dict.keys())[list(reg_dict.values()).index(r2)]
+        reg3 = list(reg_dict.keys())[list(reg_dict.values()).index(r3)]
+        regval_dict[reg3] = orr(regval_dict[reg1],regval_dict[reg2])
+        
+    if opcode == '10001':  #type A sub
+        FLAGS=list('0000000000000000')
+        r1 = i[7:10]
+        r2 = i[10:13]
+        r3 = i[13:]
+        # print(r1,r2,r3)
+        reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)]
+        # print(reg)
+        reg2 = list(reg_dict.keys())[list(reg_dict.values()).index(r2)]
+        reg3 = list(reg_dict.keys())[list(reg_dict.values()).index(r3)]
+        if (bintodec(regval_dict[reg1])-bintodec(regval_dict[reg2]))<0:
+            FLAGS[12]='1'
+            regval_dict[reg3] = str(dectobin16bit((bintodec(regval_dict[reg1])-bintodec(regval_dict[reg1]))*0))
+        else:
+            regval_dict[reg3] = str(dectobin16bit(bintodec(regval_dict[reg1])-bintodec(regval_dict[reg2])))
+        
+    if opcode == '11000': #rs
+        FLAGS=list('0000000000000000')
+        r = i[5:8] 
+        reg = list(reg_dict.keys())[list(reg_dict.values()).index(r)]
+        if int((dectobin16bit(bintodec(regval_dict[reg])>>bintodec(i[8:]))))>((2**16)-1):
+            FLAGS[12]='1'
+            regval_dict[reg]=str(dectobin16bit((bintodec(regval_dict[reg])>>bintodec(i[8:]))%2**16))
+        else:
+            regval_dict[reg] = str(dectobin16bit(bintodec(regval_dict[reg])>>bintodec(i[8:])))
+        
+    if opcode == '11001': #ls
+        FLAGS=list('0000000000000000')
+        r = i[5:8] 
+        reg = list(reg_dict.keys())[list(reg_dict.values()).index(r)]
+        
+        if (int((dectobin16bit(bintodec(regval_dict[reg])<<bintodec(i[8:])))))<0:
+            FLAGS[12]='1'
+            regval_dict[reg] = str(dectobin16bit(0))
+        else:
+            regval_dict[reg] = str(dectobin16bit((bintodec(regval_dict[reg])<<bintodec(i[8:]))))
+            
+
+        
+        
+    if opcode == '11101': #not
+        FLAGS=list('0000000000000000')
+        #complete type C
+        r1 = i[10:13]
+        r2 = i[13:]
+        reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)]
+        reg2 = list(reg_dict.keys())[list(reg_dict.values()).index(r2)]
+        regval_dict[reg2] = no(regval_dict[reg1])
+        
+    if opcode == '10111': #div
+        FLAGS=list('0000000000000000')
+        r1 = i[10:13]
+        r2 = i[13:]
+        reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)]
+        reg2 = list(reg_dict.keys())[list(reg_dict.values()).index(r2)]
+        regval_dict['R0'] = str(dectobin16bit(bintodec(regval_dict[reg1])%bintodec(regval_dict[reg2])))
+        regval_dict['R1'] = str(dectobin16bit(bintodec(regval_dict[reg1])//bintodec(regval_dict[reg2])))
+        
+        
+    if opcode == '10011': #mov type c
+        FLAGS=list('0000000000000000')
+        r1 = i[10:13]
+        r2 = i[13:]
+        if(r1=='111'):
+            reg1=''
+            reg1+=FLAGS
+        reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)]
+        reg2 = list(reg_dict.keys())[list(reg_dict.values()).index(r2)]
+        regval_dict[reg1] = str(dectobin16bit(bintodec(regval_dict[reg2])))
+        
+        
+    if opcode == '10100': #load
+        FLAGS=list('0000000000000000')
+        r = i[5:8]
+        reg = list(reg_dict.keys())[list(reg_dict.values()).index(r)]
+        regval_dict[reg] = mem[bintodec(i[8:])]
+        
+    if opcode == '10101': #store
+        FLAGS=list('0000000000000000')
+        r = i[5:8]
+        reg = list(reg_dict.keys())[list(reg_dict.values()).index(r)]
+        mem[bintodec(i[8:])] = regval_dict[reg]
+    print(dectobin8bit(pc), end=' ')
+    pc+=1    
+        
+    if opcode == '11110':
+        FLAGS=list('0000000000000000')
+        r1 = i[10:13]
+        r2 = i[13:]
+        reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)]
+        reg2 = list(reg_dict.keys())[list(reg_dict.values()).index(r2)]
+        if ((bintodec(regval_dict[reg1]))==(bintodec(regval_dict[reg2]))):
+            FLAGS[15]='1'
+        elif ((bintodec(regval_dict[reg1]))>(bintodec(regval_dict[reg2]))):
+            FLAGS[14]='1'
+        elif ((bintodec(regval_dict[reg1]))<(bintodec(regval_dict[reg2]))):
+            FLAGS[13]='1'
+    if opcode =='11111':
+        k=i[8:]
+        pc=bintodec(k)
+        FLAGS=list('0000000000000000')
+    if opcode == '01100':
+        if FLAGS[13]=='1':
+            k=i[8:]
+            pc=bintodec(k)
+        FLAGS[14]='0'
+        FLAGS[13]='0'
+        FLAGS[15]='0'
+    if opcode == '01101':
+        if FLAGS[14]=='1':
+            k=i[8:]
+            pc=bintodec(k)
+        FLAGS[14]='0'
+        FLAGS[13]='0'
+        FLAGS[15]='0'
+    if opcode == '01111':
+        if FLAGS[15]=='1':
+            k=i[8:]
+            pc=bintodec(k)
+        FLAGS[14]='0'
+        FLAGS[13]='0'
+        FLAGS[15]='0'
+    print(str(regval_dict['R0']),str(regval_dict['R1']),str(regval_dict['R2']),str(regval_dict['R3']),str(regval_dict['R4']),str(regval_dict['R5']),str(regval_dict['R6']), ''.join(FLAGS))
+    FLAGS[12]='0'
+    if opcode =='01010':
+        halt=True
+for i in mem:
+    print(i)
