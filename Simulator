@@ -39,6 +39,7 @@ def xor(a,b):
             c+='1'
         else:
             c+='0'
+    return c
 def orr(a,b):
     a=list(a)
     b=list(b)
@@ -48,15 +49,17 @@ def orr(a,b):
             c+='1'
         else:
             c+='0'
+    return c
 def andd(a,b):
     a=list(a)
     b=list(b)
     c=""
     for  i in range(16):
-        if a[i]==b[i]:
+        if a[i]=='1' and b[i]=='1':
             c+='1'
         else:
             c+='0'
+    return c
 def bintodec(n):
     return int(n,2)
 def ee(regval_dict, count):
@@ -215,8 +218,8 @@ while(halt==False):
         r2 = i[13:]
         reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)]
         reg2 = list(reg_dict.keys())[list(reg_dict.values()).index(r2)]
-        regval_dict['R0'] = str(dectobin16bit(bintodec(regval_dict[reg1])%bintodec(regval_dict[reg2])))
-        regval_dict['R1'] = str(dectobin16bit(bintodec(regval_dict[reg1])//bintodec(regval_dict[reg2])))
+        regval_dict['R0'] = str(dectobin16bit(bintodec(regval_dict[reg1])//(bintodec(regval_dict[reg2]))))
+        regval_dict['R1'] = str(dectobin16bit(bintodec(regval_dict[reg1])%(bintodec(regval_dict[reg2]))))
         
         
     if opcode == '10011': #mov type c
@@ -225,10 +228,11 @@ while(halt==False):
         r2 = i[13:]
         if(r1=='111'):
             reg1=''
-            reg1+=FLAGS
-        reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)]
+            reg1=reg1.join(FLAGS)
+        else:
+            reg1 = list(reg_dict.keys())[list(reg_dict.values()).index(r1)]
         reg2 = list(reg_dict.keys())[list(reg_dict.values()).index(r2)]
-        regval_dict[reg1] = str(dectobin16bit(bintodec(regval_dict[reg2])))
+        regval_dict[reg2] = str(dectobin16bit(bintodec(regval_dict[reg1])))
         
         
     if opcode == '10100': #load
