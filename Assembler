@@ -12,13 +12,15 @@ R4=0
 R5=0
 R6=0
 
+# f=open("C:\\Users\\vishal\\Documents\\co_files\\test1.txt","r")
+# lines=f.readlines()
+
 
 instructions=[]
 for i in stdin:
-    if i==[]:
-        continue
-    lst=[str(x) for x in i.split()]
-    instructions.append(lst)
+    if i!=[] and i!="" and i!="\n":
+        lst=[str(x) for x in i.split()]
+        instructions.append(lst)
 flag=list("0000000000000000")
 binary=[]
 
@@ -69,11 +71,12 @@ def typeC(l1):
     else:
         string += op_dict[l1[0]]
     string+="00000"
-    string+=reg_dict[l1[1]]
-    if l1[2] in reg_dict:
-        string+=reg_dict[l1[2]]
+    
+    if l1[1] in reg_dict:
+        string+=reg_dict[l1[1]]
     else:
         string+="111"
+    string+=reg_dict[l1[2]]
     binary.append(string)
     return 
 def hlt(l1):
@@ -104,24 +107,33 @@ while(instructions[i][0]=="var"):
     i+=1   
 mb=len(instructions)
 for i in range(mb):
+    if(1):
+        if (instructions[i][0]=="var" and i<=k-1):
+            if len(instructions[i])!=2:
+                print("Error at line ", i+1, "Invalid instruction")
+                quit()
+            if (instructions[i][1] in reg_dict):
+                print("Error at line "+str(i+1)+" Registors can't be used as variables")
+                quit()
+            else:
+                var_dict[instructions[i][1]]=addtobin(len(instructions)-k+i)
+        if(instructions[i][0]=="var" and i>k-1):
+            print("Error at line "+str(i)+": variables declaration must be at the top only ")
+            quit()
+for i in range(mb):
     if (list(instructions[i][0])[-1]==':'):
         label=list(instructions[i][0])[:(len(instructions[i][0]))-1]
         label="".join(label)
         instructions[i]=instructions[i][1:]
-        label_dict[label]=addtobin(i+1)
-
+        label_dict[label]=addtobin(i-k)
 
 for i in range(mb):
-    if(instructions[len(instructions)-1]!=["hlt"]):
-        print("Error : No halt given")
-        quit()
-    else:
-        if (instructions[i][0]=="var" and i<=k-1):
-            var_dict[instructions[i][1]]=addtobin(len(instructions)-k+i)
-        if(instructions[i][0]=="var" and i>k-1):
-            print("Error : variables declaration must be at the top only")
-            quit()
-    
+    if (list(instructions[i][0])[-1]==':'):
+        label=list(instructions[i][0])[:(len(instructions[i][0]))-1]
+        label="".join(label)
+        instructions[i]=instructions[i][1:]
+        label_dict[label]=addtobin(i-k)
+
     if (i>k-1 and (instructions[i][0] not in op_dict) and (list(instructions[i][0])[-1]!=':')):
         print("Error : invalid instruction in line "+str(i+1))
         quit()
@@ -133,7 +145,10 @@ for i in range(mb):
                 quit()
     else:
         if(instructions[i][0]=="mov" or instructions[i][0]=="ls" or instructions[i][0]=="rs"):
-            if(instructions[i][1] in reg_dict):
+            if(len(instructions[i])<3 or len(instructions[i])>3):
+                print("Error at line ", i+1, "Invalid statement")
+                quit()
+            if(instructions[i][2] in reg_dict or instructions[i][1]):
                 if (list(instructions[i][2])[0]=='$'):
                     lst=list("0123456789")
                     for j in list(instructions[i][2][1:]):
@@ -141,7 +156,7 @@ for i in range(mb):
                             print("Error : Illegal immidiate value at line "+str(i+1))
                             quit()
                     typeB(instructions[i])
-                elif(instructions[i][2] in reg_dict or instructions[i][2]=="FLAGS"):
+                elif((instructions[i][1] in reg_dict or instructions[i][1]=="FLAGS") and instructions[i][2] in reg_dict):
                     typeC(instructions[i])
                 elif((list(instructions[i][2])[0]!='$') and (instructions[i][2] not in reg_dict) and (instructions[i][2]!="FLAGS")):
                     print("Error : Invalid Instructions at line "+str(i+1))
@@ -150,7 +165,11 @@ for i in range(mb):
                 print("Error : Invalid statement at line "+str(i+1))
                 quit()
         else:
+            
             if(instructions[i][0]=="div" or instructions[i][0]=="not" or instructions[i][0]=="cmp"):
+                if(len(instructions[i])<3 or len(instructions[i])>3):
+                    print("Error at line ", i+1, "Invalid statement")
+                    quit()
                 if((instructions[i][1] in reg_dict) and (instructions[i][2] in reg_dict)):
                     typeC(instructions[i])
                 else:
@@ -158,6 +177,9 @@ for i in range(mb):
                     quit()
             else:
                 if(instructions[i][0]=="ld" or instructions[i][0]=="st"):
+                    if(len(instructions[i])<3 or len(instructions[i])>3):
+                        print("Error at line ", i+1, "Invalid statement")
+                        quit()
                     if(instructions[i][1] in reg_dict):
                         if(instructions[i][2] in var_dict):
                             typeD(instructions[i])
@@ -169,14 +191,29 @@ for i in range(mb):
                         quit()
                 else:
                     if(instructions[i][0]=="jmp" or instructions[i][0]=="jlt" or instructions[i][0]=="jgt" or instructions[i][0]=="je"):
+                        if(len(instructions[i])<2 or len(instructions[i])>2):
+                            print("Error at line ", i+1, "Invalid statement")
+                            quit()
+                        if (instructions[i][1] in var_dict):
+                            print("Error at line "+str(i+1)+" Invalid label")
+                            quit()
                         if(instructions[i][1] in label_dict):
                             typeE(instructions[i])
                         else:
                             print("Error : Use of invalid Label at line "+str(i+1))
                             quit()
                     else:
-                        if(instructions[i][0]=="hlt"):
+                        if (instructions[i][0]=="hlt" and i<mb-1):
+                            print("Error at line "+str(i+1)+" halt given which is not the last line")
+                            quit()
+                        elif(instructions[i][0]=="hlt"):
+                            if(len(instructions[i])<1 or len(instructions[i])>1):
+                                print("Error at line ", i+1, "Invalid statement")
+                                quit()
                             hlt(instructions[i])
+    if (i==mb-1 and instructions[i][0]!="hlt"):
+        print("No halt given at line "+str(i+1)+"Which the last line")
+        quit()                        
 
 for i in binary:
     print(i)
